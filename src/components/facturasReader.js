@@ -4,7 +4,7 @@ import Styles from '../styles'
 import parseFactura from '../parseFactura'
 import tableColumns from './table/columns'
 
-function MyForm() {
+function FacturasReader() {
     const [facturasData, setFacturasData] = useState()
     const [files, setFiles] = useState([])
     const [hideFilters, setHideFilters] = useState(false)
@@ -75,4 +75,4 @@ function MyForm() {
     )
 }
 
-export default MyForm
+export default FacturasReader

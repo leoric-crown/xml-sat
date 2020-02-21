@@ -31,7 +31,11 @@ function SelectColumnFilter({
 const columns = [
     {
         id: 'expander',
-        Header: '',
+        Header: ({ getToggleAllRowsExpandedProps, isAllRowsExpanded }) => (
+            <span {...getToggleAllRowsExpandedProps()}>
+                {isAllRowsExpanded ? '👇' : '👉'}
+            </span>
+        ),
         Cell: ({ row }) => {
             return (
                 <span {...row.getToggleRowExpandedProps()}>

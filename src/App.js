@@ -1,11 +1,11 @@
 import React from 'react';
 import './App.css';
-import MyForm from './components/facturasReader'
+import FacturasReader from './components/facturasReader';
 
 function App() {
   return (
     <React.Fragment>
-      <MyForm/> 
+      <FacturasReader/> 
     </React.Fragment>
   );
 }
