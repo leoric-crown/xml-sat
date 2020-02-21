@@ -1,6 +1,5 @@
 import React from 'react';
-import './App.css';
-import FacturasReader from './components/facturasReader';
+import FacturasReader from './components/FacturasReader';
 
 function App() {
   return (

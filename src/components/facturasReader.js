@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Table from './table/Table'
-import Styles from '../styles'
+import Styles from './Styles'
 import parseFactura from '../parseFactura'
 import tableColumns from './table/columns'
 
@@ -14,19 +14,13 @@ function FacturasReader() {
     })
     const prevFiles = prevFilesRef.current
 
-    const columns = React.useMemo(
-        () => tableColumns,
-        []
-    )
+    const columns = React.useMemo(() => tableColumns, [])
 
     if (files.length > 0 && prevFiles !== files) {
-        const xmlPromises = []
-        files.forEach(file => {
-            xmlPromises.push(file.text())
-        })
-        Promise.all(xmlPromises).then(xmlData => {
-            setFacturasData(parseFactura(xmlData))
-        })
+        Promise.all(files.map(file => file.text()))
+            .then(xmlData => {
+                setFacturasData(parseFactura(xmlData))
+            })
     }
 
     const renderRowSubComponent = React.useCallback(
@@ -36,7 +30,7 @@ function FacturasReader() {
                     fontSize: "10px"
                 }}
             >
-                <div>{console.log(row)}{JSON.stringify({...row.original.conceptos}, null, "\t")}</div>
+                <div>{console.log(row)}{JSON.stringify({ ...row.original.conceptos }, null, "\t")}</div>
             </pre>
         ),
         []
