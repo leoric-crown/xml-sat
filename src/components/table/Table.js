@@ -1,31 +1,7 @@
 import React from 'react'
-import { useTable, useSortBy, useFilters, useGlobalFilter } from 'react-table'
+import { useTable, useFilters, useSortBy, useExpanded } from 'react-table'
 import matchSorter from 'match-sorter'
 
-function GlobalFilter({
-    preGlobalFilteredRows,
-    globalFilter,
-    setGlobalFilter,
-}) {
-    const count = preGlobalFilteredRows.length
-
-    return (
-        <span>
-            Search:{' '}
-            <input
-                value={globalFilter || ''}
-                onChange={e => {
-                    setGlobalFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
-                }}
-                placeholder={`${count} records...`}
-                style={{
-                    fontSize: '1.1rem',
-                    border: '0',
-                }}
-            />
-        </span>
-    )
-}
 
 function DefaultColumnFilter({
     column: { filterValue, preFilteredRows, setFilter },
@@ -36,7 +12,7 @@ function DefaultColumnFilter({
         <input
             value={filterValue || ''}
             onChange={e => {
-                setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
+                setFilter(e.target.value || undefined)
             }}
             placeholder={`Search ${count} records...`}
         />
@@ -48,7 +24,7 @@ function fuzzyTextFilterFn(rows, id, filterValue) {
 }
 fuzzyTextFilterFn.autoRemove = val => !val
 
-function Table({ columns, data }) {
+function Table({ columns, data, hideFilters, renderRowSubComponent }) {
     const filterTypes = React.useMemo(
         () => ({
             fuzzyText: fuzzyTextFilterFn,
@@ -79,10 +55,8 @@ function Table({ columns, data }) {
         headerGroups,
         rows,
         prepareRow,
-        state,
         visibleColumns,
-        preGlobalFilteredRows,
-        setGlobalFilter
+        state: { expanded }
     } = useTable(
         {
             columns,
@@ -91,8 +65,8 @@ function Table({ columns, data }) {
             filterTypes
         },
         useFilters,
-        useGlobalFilter,
-        useSortBy
+        useSortBy,
+        useExpanded
     )
 
     return (
@@ -101,44 +75,42 @@ function Table({ columns, data }) {
                 {headerGroups.map(headerGroup => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                         {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                                {column.render('Header')}
-                                <span>
+                            <th {...column.getHeaderProps()}>
+                                <span {...column.getSortByToggleProps()}>
+                                    {column.render('Header')}
+                                    {/* Add a sort direction indicator */}
                                     {column.isSorted
                                         ? column.isSortedDesc
                                             ? ' 🔽'
                                             : ' 🔼'
                                         : ''}
                                 </span>
-                                <div>{column.canFilter ? column.render('Filter') : null}</div>
+                                {/* Render the columns filter UI */}
+                                <div>{!hideFilters && column.canFilter ? column.render('Filter') : null}</div>
                             </th>
                         ))}
                     </tr>
                 ))}
-                <tr>
-                    <th
-                        colSpan={visibleColumns.length}
-                        style={{
-                            textAlign: 'left',
-                        }}
-                    >
-                        <GlobalFilter
-                            preGlobalFilteredRows={preGlobalFilteredRows}
-                            globalFilter={state.globalFilter}
-                            setGlobalFilter={setGlobalFilter}
-                        />
-                    </th>
-                </tr>
             </thead>
             <tbody {...getTableBodyProps()}>
                 {rows.map((row, i) => {
                     prepareRow(row)
                     return (
-                        <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => {
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                            })}
-                        </tr>
+                        <React.Fragment {...row.getRowProps()}>
+                            <tr>
+                                {row.cells.map(cell => {
+                                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                                })}
+                            </tr>
+                            {row.isExpanded ? (
+                                <tr>
+                                    <td colSpan={visibleColumns.length}>
+                                        {renderRowSubComponent({ row })}
+                                    </td>
+                                </tr>
+                            ) : null }
+                        </React.Fragment>
+
                     )
                 })}
             </tbody>

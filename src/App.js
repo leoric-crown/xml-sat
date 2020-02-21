@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import MyForm from './components/myForm'
+import MyForm from './components/facturasReader'
 
 function App() {
   return (
