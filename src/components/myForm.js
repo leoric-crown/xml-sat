@@ -1,12 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react'
 import XMLParser from 'react-xml-parser'
 import Table from './Table'
+import moment from 'moment'
+import decode from 'decode-html'
+
+function SelectColumnFilter({
+    column: { filterValue, setFilter, preFilteredRows, id },
+}) {
+    // Calculate the options for filtering
+    // using the preFilteredRows
+    const options = React.useMemo(() => {
+        const options = new Set()
+        preFilteredRows.forEach(row => {
+            options.add(row.values[id])
+        })
+        return [...options.values()]
+    }, [id, preFilteredRows])
+
+    // Render a multi-select box
+    return (
+        <select
+            value={filterValue}
+            onChange={e => {
+                setFilter(e.target.value || undefined)
+            }}
+        >
+            <option value="">All</option>
+            {options.map((option, i) => (
+                <option key={i} value={option}>
+                    {option}
+                </option>
+            ))}
+        </select>
+    )
+}
 
 const xmlParser = new XMLParser()
 const columns = [
     {
         Header: 'Emisor',
-        accessor: 'emisor'
+        accessor: 'emisor',
+        filter: 'fuzzyText'
     },
     {
         Header: 'RFC',
@@ -30,7 +64,9 @@ const columns = [
     },
     {
         Header: 'Efecto',
-        accessor: 'efecto'
+        accessor: 'efecto',
+        Filter: SelectColumnFilter,
+        filter: 'includes'
     }
 ]
 function parseResults(results) {
@@ -39,10 +75,11 @@ function parseResults(results) {
         const jsonParse = xmlParser.parseFromString(xml)
         const { attributes, children } = jsonParse
         const { SubTotal, Total, Fecha } = attributes
+        const fecha = moment(Fecha).format('DD/MM/YYYY h:mm:ss a')
         const emisorXml = children.find(obj => {
             return obj.name === 'cfdi:Emisor'
         })
-        const emisor = emisorXml.attributes.Nombre
+        const emisor = decode(emisorXml.attributes.Nombre)
         const rfc = emisorXml.attributes.Rfc
         const impuestos = children.find(obj => {
             return obj.name === 'cfdi:Impuestos'
@@ -73,7 +110,7 @@ function parseResults(results) {
         const json = {
             total: Total,
             subtotal: SubTotal,
-            fecha: Fecha,
+            fecha,
             emisor,
             rfc,
             efecto,
