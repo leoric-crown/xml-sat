@@ -1,10 +1,13 @@
 import React from 'react';
 import FacturasReader from './components/FacturasReader';
+import ZipReader from './components/ZipReader'
+
 
 function App() {
   return (
     <React.Fragment>
-      <FacturasReader/> 
+      <FacturasReader/>
+      <ZipReader/>
     </React.Fragment>
   );
 }

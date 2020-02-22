@@ -16,8 +16,15 @@ function FacturasReader() {
 
     const columns = React.useMemo(() => tableColumns, [])
 
+    const validExtension = new RegExp(/(.*?)\.(xml)$/, 'i')
+
     if (files.length > 0 && prevFiles !== files) {
-        Promise.all(files.map(file => file.text()))
+        Promise.all(files.map(file => {
+            const match = validExtension.exec(file.name)
+            if (match) {
+                return file.text()
+            }
+        }))
             .then(xmlData => {
                 setFacturasData(parseFactura(xmlData))
             })
@@ -25,12 +32,8 @@ function FacturasReader() {
 
     const renderRowSubComponent = React.useCallback(
         ({ row }) => (
-            <pre
-                style={{
-                    fontSize: "10px"
-                }}
-            >
-                <div>{console.log(row)}{JSON.stringify({ ...row.original.conceptos }, null, "\t")}</div>
+            <pre style={{ fontSize: "10px" }}>
+                <div>{JSON.stringify({ ...row.original.conceptos }, null, "\t")}</div>
             </pre>
         ),
         []
