@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react"
 import Dropzone from "./dropzone/Dropzone"
 import Progress from "./progress/Progress"
+
+import { IconContext } from "react-icons"
+import { FaCheck } from 'react-icons/fa'
 import "./Upload.css"
+import { request } from "http"
+
+
 
 function Upload() {
   const [files, setFiles] = useState([])
@@ -15,9 +21,21 @@ function Upload() {
   })
   const prevFiles = prevFilesRef.current
 
+  console.log('PROGRESS', JSON.stringify(progress, null, "\t"))
+
+  function onAddFiles(files) {
+    const uploadProgress = {}
+    files.forEach(file => uploadProgress[file.name] = {
+      state: 'pending',
+      percentage: 0
+    })
+    setFiles(files)
+    setProgress(uploadProgress)
+  }
+
   async function uploadFiles() {
     setUploading(true)
-    setProgress({})
+    console.log('new upload files action', JSON.stringify(progress, null, "\t"))
 
     const promises = []
     files.forEach(file => promises.push(sendRequest(file)))
@@ -27,7 +45,7 @@ function Upload() {
       console.log('All requests responded:', res.map(r => r.responseText))
     } catch (e) {
       setUploading(false)
-      setSuccess(true)
+      // setSuccess(true)
     }
   }
 
@@ -35,54 +53,52 @@ function Upload() {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest()
 
-      req.upload.addEventListener("progress", event => {
+      req.upload.addEventListener('progress', event => {
         if (event.lengthComputable) {
           const copy = { ...progress }
           copy[file.name] = {
-            state: "pending",
+            state: 'pending',
             percentage: (event.loaded / event.total) * 100
-          };
+          }
           setProgress(copy)
+
         }
       })
 
-      req.upload.addEventListener("load", event => {
+      req.upload.addEventListener('load', event => {
         const copy = { ...progress }
-        copy[file.name] = { state: "done", percentage: 100 }
+        copy[file.name] = { state: 'done', percentage: 100 }
         setProgress(copy)
+
         resolve(req)
       })
 
-      req.upload.addEventListener("error", event => {
+      req.upload.addEventListener('error', event => {
         const copy = { ...progress }
-        copy[file.name] = { state: "error", percentage: 0 }
+        copy[file.name] = { state: 'error', percentage: 0 }
         setProgress(copy)
+
         reject(req)
       })
 
       const formData = new FormData()
-      formData.append("file", file, file.name)
-      req.open("POST", "http://localhost:5000/files/unzip")
+      formData.append('file', file, file.name)
+      req.open('POST', 'http://localhost:5000/files/unzip')
       req.send(formData)
     })
   }
 
   function renderProgress(file) {
     const prog = progress[file.name]
+    const iconColor = success ? 'rgba(103, 58, 183, 1)' : 'rgba(183, 155, 229,0.3)'
     if (uploading || success) {
       return (
-        <div className="ProgressWrapper">
-          <Progress progress={prog ? prog.percentage : 0} />
-          <img
-            className="CheckIcon"
-            alt="done"
-            src="baseline-check_circle_outline-24px.svg"
-            style={{
-              opacity:
-                prog && prog.state === "done" ? 0.5 : 0
-            }}
-          />
-        </div>
+        <IconContext.Provider value={{ color: iconColor, size: '0.8em', style: { paddingLeft: '0.2em' } }}>
+          <div className="ProgressWrapper">
+            <Progress progress={prog ? prog.percentage : 0} />
+            <FaCheck />
+          </div>
+        </IconContext.Provider>
       )
     }
   }
@@ -117,7 +133,7 @@ function Upload() {
       <div className="Content">
         <div>
           <Dropzone
-            onFilesAdded={(e) => setFiles(Array.from(e.target.files))}
+            onFilesAdded={(e) => onAddFiles(Array.from(e.target.files))}
             disabled={uploading || success}
           />
         </div>

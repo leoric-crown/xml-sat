@@ -96,14 +96,14 @@ function Table({ columns, data, hideFilters, renderRowSubComponent }) {
                 {rows.map((row, i) => {
                     prepareRow(row)
                     return (
-                        <React.Fragment {...row.getRowProps()}>
-                            <tr>
+                        <React.Fragment key={i}>
+                            <tr {...row.getRowProps()}>
                                 {row.cells.map(cell => {
                                     return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                                 })}
                             </tr>
                             {row.isExpanded ? (
-                                <tr>
+                                <tr {...row.getRowProps()}>
                                     <td colSpan={visibleColumns.length}>
                                         {renderRowSubComponent({ row })}
                                     </td>
