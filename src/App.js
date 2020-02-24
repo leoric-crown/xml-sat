@@ -1,6 +1,7 @@
 import React from 'react';
 import FacturasReader from './components/FacturasReader';
 import ZipReader from './components/ZipReader'
+import Upload from './components/upload/Upload'
 
 
 function App() {
@@ -8,6 +9,7 @@ function App() {
     <React.Fragment>
       <FacturasReader/>
       <ZipReader/>
+      <Upload/>
     </React.Fragment>
   );
 }

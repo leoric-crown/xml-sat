@@ -8,6 +8,7 @@ function FacturasReader() {
     const [facturasData, setFacturasData] = useState()
     const [files, setFiles] = useState([])
     const [hideFilters, setHideFilters] = useState(false)
+
     const prevFilesRef = useRef()
     useEffect(() => {
         prevFilesRef.current = files
